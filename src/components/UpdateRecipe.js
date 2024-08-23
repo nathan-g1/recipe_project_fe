@@ -2,37 +2,69 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const BASE_URL = 'http://127.0.0.1:8000/api/recipes/';
 const UpdateRecipe = () => {
   const { id } = useParams();
   const [name, setName] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [instructions, setInstructions] = useState('');
   const history = useNavigate();
 
   useEffect(() => {
-    axios.get(`/api/recipes/${id}/`)
-      .then(response => setName(response.data.name))
+    axios.get(`${BASE_URL}${id}/`)
+      .then(response => {
+        const recipe = response.data;
+        setName(recipe.name);
+        setIngredients(recipe.ingredients);
+        setInstructions(recipe.instructions);
+      })
       .catch(error => console.error('Error fetching recipe:', error));
   }, [id]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    axios.put(`/api/recipes/${id}/`, { name })
+    axios.put(`${BASE_URL}${id}/update/`, { name, ingredients, instructions })
       .then(() => history.push('/'))
       .catch(error => console.error('Error updating recipe:', error));
   };
 
   return (
-    <div>
-      <h1>Update Recipe</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Recipe Name"
-          required
-        />
-        <button type="submit">Update</button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Update Recipe</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Recipe Name"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <textarea
+            value={ingredients.split(',').join('\n')}
+            onChange={(e) => setIngredients(e.target.value)}
+            placeholder="Ingredients"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="4"
+          />
+          <textarea
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            placeholder="Instructions"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="4"
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Update
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
